@@ -1,1 +1,1 @@
-# SIgnalsVisualizer
+# SignalsVisualizer
