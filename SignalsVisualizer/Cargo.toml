@@ -1,0 +1,10 @@
+[package]
+name = "SignalsVisualizer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Tokio
+tokio = { version = "1.52.3", features = ["full"] }
+# Axum
+axum = "0.8.9"
