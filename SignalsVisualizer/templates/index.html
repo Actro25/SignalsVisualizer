@@ -6,6 +6,39 @@
     <title>Document</title>
 </head>
 <body>
-    Hello World from templates
+    <header>
+        <button id="ws_start">Start</button>
+        <button id="ws_stop">Stop</button>
+    </header>
+    <main></main>
 </body>
 </html>
+<script>
+    const startButton = document.getElementById("ws_start");
+    const stopButton = document.getElementById("ws_stop");
+    let ws = null;
+
+    startButton.addEventListener('click', function () {
+        if(ws){
+            console.log("Active.");
+            return;
+        }
+
+        ws = new WebSocket("/ws");
+
+        ws.onmessage = (event) => {
+            const value = parseInt(event.data);
+            console.log(value);
+        }
+
+        ws.onerror = (error) => {
+            console.log("Error WebSocket: ", error);
+        }
+    })
+
+    stopButton.addEventListener('click', function () {
+        ws.close();
+        ws = null;
+    })
+
+</script>
