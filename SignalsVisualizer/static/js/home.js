@@ -16,8 +16,14 @@ startButton.addEventListener('click', function () {
     ws = new WebSocket("/ws");
 
     ws.onmessage = (event) => {
-        const value = parseInt(event.data);
-        console.log(value);
+        try {
+            const signal = JSON.parse(event.data);
+            console.log(signal);
+            uplot.setData([signal.x, signal.y]);
+        }
+        catch (err){
+            console.log("Error JSON serializing: ", err);
+        }
     }
 
     ws.onerror = (error) => {
@@ -40,7 +46,7 @@ loadPlotButton.addEventListener('click', function () {
         width: 800,
         height: 400,
         series: [
-            {}, // конфіг для X-осі (зазвичай порожній)
+            {},
             {
                 label: "Значення",
                 stroke: "blue",
