@@ -27,7 +27,7 @@ async fn main() {
         listener.local_addr().unwrap()
     );
     
-    tokio::spawn(async move { signals::Signals::generate_data(prod, 0.1, 0.05).await; });
+    tokio::spawn(async move { signals::Signals::generate_data(prod, 0.0, 0.005).await; });
 
     axum::serve(listener, app).await.unwrap();
 }

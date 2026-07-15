@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.min.css">
-
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 <body>
-    <header>
-        <button id="ws_start">Start</button>
-        <button id="ws_stop">Stop</button>
-        <button id="load_plot">Load plot</button>
-    </header>
     <main>
-        <div id="show"></div>
+        <div class="left-div">
+            <div id="show" class="graphik-div"></div>
+        </div>
+        <div class='right-div'>
+            <div class="right-upper-bar">
+                <button id="ws_start">Start</button>
+                <button id="ws_stop">Stop</button>
+            </div>
+            <div class="items">
+
+            </div>
+        </div>
     </main>
 
     <script src="/js/home.js"></script>

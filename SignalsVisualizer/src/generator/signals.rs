@@ -2,7 +2,7 @@ use crate::handlers::index::Points;
 use ringbuf::traits::Split;
 use ringbuf::{HeapRb, Prod};
 
-pub struct Point(f64, f64);
+pub struct Point(pub f64,pub f64);
 
 pub struct Signals {
     pub ring_buffer: HeapRb<Point>,

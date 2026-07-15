@@ -24,28 +24,31 @@ pub struct Points{
 }
 
 async fn handler_socket(mut socket: WebSocket, cons: Arc<Mutex<impl ringbuf::traits::Consumer<Item = Point> + Send + 'static>>) {
-    let mut counter: u64 = 0;
 
-    let mut x_count: f64 = 5.0;
-    let mut y_count: f64 = 10.5;
     loop {
-        let transfer_value: Points = Points{
-            x: x_count,
-            y: y_count
-        };
-
-        match serde_json::to_string(&transfer_value) {
-            Ok(json_string) => {
-                if socket.send(Message::Text(json_string.into())).await.is_err() {
-                    break;
-                }
+        let mut points: Vec<Point> = Vec::new();
+        {
+            let mut cons_guard = cons.lock().unwrap();
+            while let Some(point) = cons_guard.try_pop(){
+                points.push(point)
             }
-            Err(e) => eprintln!("Error JSON serializing: {}", e)
         }
 
-        x_count += 0.1;
-        y_count += 0.05;
+        for point in points {
+            let transfer_value: Points = Points{
+                x: point.0,
+                y: point.1
+            };
+            match serde_json::to_string(&transfer_value) {
+                Ok(json_string) => {
+                    if socket.send(Message::Text(json_string.into())).await.is_err() {
+                        break;
+                    }
+                }
+                Err(e) => eprintln!("Error JSON serializing: {}", e)
+            }
+        }
 
-        tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
     }
 }
