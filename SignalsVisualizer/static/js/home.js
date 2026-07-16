@@ -1,6 +1,5 @@
 const startButton = document.getElementById("ws_start");
 const stopButton = document.getElementById("ws_stop");
-const loadPlotButton = document.getElementById("load_plot");
 
 const showPlotDiv = document.getElementById("show");
 
@@ -81,7 +80,7 @@ startButton.addEventListener('click', function () {
 })
 
 document.addEventListener("DOMContentLoaded", () => {
-    ringBuffer = new RingBuffer(50);
+    ringBuffer = new RingBuffer(1000);
     const opts = {
         width: 800,
         height: 400,
