@@ -1,11 +1,12 @@
-use std::sync::{Arc};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use askama::Template;
 use axum::extract::State;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::response::{Html, IntoResponse, Response};
-use serde::Serialize;
-use tokio::sync::Mutex;
-use crate::generator::signals::Point;
+use tokio::sync::broadcast::{Receiver, Sender};
+use crate::generator::point::Point;
+use crate::generator::signals::Signals;
 use crate::models::templates::{HomeTemplate};
 
 pub async fn home() -> Response{
@@ -13,33 +14,45 @@ pub async fn home() -> Response{
     Html(html_string).into_response()
 }
 
+pub async fn ws_data_transfer_handler(ws: WebSocketUpgrade, State(prod): State<Sender<Point>>) -> impl IntoResponse {
+    let consumer = prod.subscribe();
+    let working = Arc::new(AtomicBool::new(true));
+    let wr1 = working.clone();
+    let wr2 = working.clone();
 
-pub async fn ws_data_transfer(ws: WebSocketUpgrade, State(cons): State<Arc<Mutex<impl ringbuf::traits::Consumer<Item = Point> + Send + 'static>>>) -> impl IntoResponse {
-    ws.on_upgrade(async move |socket| { handler_socket(socket, cons).await; })
+    let mut signal = Signals::new(wr1);
+    tokio::spawn(async move {
+        signal.generate_data(prod, 0.0, 0.005).await;
+    });
+
+    ws.on_upgrade(async move |socket| {
+        send_data_via_ws(socket, consumer).await;
+        wr2.store(false,Ordering::Relaxed);
+    })
+
 }
 
-#[derive(Serialize)]
-pub struct Points{
-    x: f64,
-    y: f64
-}
-
-async fn handler_socket(mut socket: WebSocket, cons: Arc<Mutex<impl ringbuf::traits::Consumer<Item = Point> + Send + 'static>>) {
+async fn send_data_via_ws(mut socket: WebSocket, mut cons: Receiver<Point>) {
     loop
     {
-        let mut cons_guard = cons.lock().await;
-        while let Some(point) = cons_guard.try_pop() {
-            let transfer_value: Points = Points{
-                x: point.0,
-                y: point.1
-            };
-            match serde_json::to_string(&transfer_value) {
-                Ok(json_string) => {
-                    if socket.send(Message::Text(json_string.into())).await.is_err() {
-                        break;
+        println!("handler");
+        match cons.recv().await {
+            Ok(point) => {
+                let transfer_value: Point = Point{
+                    x: point.x,
+                    y: point.y
+                };
+                match serde_json::to_string(&transfer_value) {
+                    Ok(json_string) => {
+                        if socket.send(Message::Text(json_string.into())).await.is_err() {
+                            break;
+                        }
                     }
+                    Err(e) => eprintln!("Error JSON serializing: {}", e)
                 }
-                Err(e) => eprintln!("Error JSON serializing: {}", e)
+            }
+            Err(e) => {
+                println!("There is exception in handler_socket: {}", e);
             }
         }
     }

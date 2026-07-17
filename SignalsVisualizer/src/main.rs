@@ -3,21 +3,17 @@ mod models;
 pub mod router;
 pub mod generator;
 
-use askama::Template;
-use axum::Router;
-use axum::response::{Html, IntoResponse, Response};
-use axum::routing::{Route, get};
-use ringbuf::traits::Split;
-use crate::generator::signals;
-use crate::generator::signals::Signals;
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::Sender;
+use tokio::sync::broadcast::Receiver;
+use crate::generator::point::Point;
 
 #[tokio::main]
 async fn main() {
-    let signal: Signals = Signals::new(100);
+
+    let (prod, _): (Sender<Point>, Receiver<Point>) = broadcast::channel(100);
     
-    let (prod, cons) = signal.ring_buffer.split();
-    
-    let app = router::router(cons);
+    let app = router::router(prod);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
@@ -26,8 +22,6 @@ async fn main() {
         "Server is listening on {} .",
         listener.local_addr().unwrap()
     );
-    
-    tokio::spawn(async move { signals::Signals::generate_data(prod, 0.0, 0.005).await; });
 
     axum::serve(listener, app).await.unwrap();
 }

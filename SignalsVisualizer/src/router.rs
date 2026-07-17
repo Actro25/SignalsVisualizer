@@ -1,15 +1,14 @@
 use axum::{routing::get, Router};
 use tower_http::services::ServeDir;
-use crate::generator::signals::{Point, Signals};
-use crate::handlers::index::{home, ws_data_transfer};
-use std::sync::{Arc};
-use tokio::sync::Mutex;
+use crate::handlers::index::{home, ws_data_transfer_handler};
+use tokio::sync::broadcast::{Sender};
+use crate::generator::point::Point;
 
-pub fn router(cons: impl ringbuf::traits::Consumer<Item = Point> + std::marker::Send + 'static) -> Router{
-    let state = Arc::new(Mutex::new(cons));
+pub fn router(prod: Sender<Point>) -> Router{
+    let state = prod;
     Router::new()
         .route("/", get(home))
-        .route("/ws", get(ws_data_transfer))
+        .route("/ws", get(ws_data_transfer_handler))
         .fallback_service(ServeDir::new("static"))
         .with_state(state)
 }

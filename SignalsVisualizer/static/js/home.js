@@ -6,6 +6,7 @@ const showPlotDiv = document.getElementById("show");
 let ws = null;
 let uplot = null;
 let ringBuffer = null;
+let isWork = false;
 
 class RingBuffer {
     constructor(capacity) {
@@ -16,6 +17,7 @@ class RingBuffer {
         this.tail = 0;
         this.isFull = false;
     }
+
     push(x, y) {
         this.xs[this.tail] = x;
         this.ys[this.tail] = y;
@@ -30,9 +32,23 @@ class RingBuffer {
             this.isFull = true;
         }
     }
-    setCapacity(capacity){
+
+    setCapacity(capacity) {
+        const [xs, ys] = this.getLinearData();
+
         this.capacity = capacity;
+        this.xs = new Float64Array(capacity);
+        this.ys = new Float64Array(capacity);
+        this.head = 0;
+        this.tail = 0;
+        this.isFull = false;
+
+        const n = Math.min(xs.length, capacity);
+        for (let i = xs.length - n; i < xs.length; i++) {
+            this.push(xs[i], ys[i]);
+        }
     }
+
     getLinearData() {
         const size = this.isFull ? this.capacity : this.tail;
         const outX = new Float64Array(size);
@@ -50,12 +66,13 @@ class RingBuffer {
             outY.set(this.ys.subarray(0, this.head), rightSize);
         }
 
-        return [outY, outX];
+        return [outX, outY];
     }
 }
 
 startButton.addEventListener('click', function () {
-    if(ws){
+    isWork = true;
+    if (ws) {
         console.log("Active.");
         return;
     }
@@ -65,11 +82,14 @@ startButton.addEventListener('click', function () {
         try {
             const signal = JSON.parse(event.data);
 
-            ringBuffer.push(signal.x,signal.y);
+            ringBuffer.push(signal.x, signal.y);
 
-            uplot.setData(ringBuffer.getLinearData());
-        }
-        catch (err){
+            console.log("x: " + signal.x + " .y: " + signal.y);
+
+            if (isWork) {
+                uplot.setData(ringBuffer.getLinearData());
+            }
+        } catch (err) {
             console.log("Error JSON serializing: ", err);
         }
     }
@@ -93,10 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
             },
         ],
     };
-    uplot = new uPlot(opts, [[],[]], showPlotDiv);
+    uplot = new uPlot(opts, [[], []], showPlotDiv);
 });
 
 stopButton.addEventListener('click', function () {
-    ws.close();
-    ws = null;
+    isWork = false;
 })

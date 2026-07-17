@@ -1,30 +1,28 @@
-use crate::handlers::index::Points;
-use ringbuf::traits::Split;
-use ringbuf::{HeapRb, Prod};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::sync::broadcast::Sender;
+use crate::generator::point::Point;
 
-pub struct Point(pub f64,pub f64);
-
-pub struct Signals {
-    pub ring_buffer: HeapRb<Point>,
+pub struct Signals{
+    pub is_working: Arc<AtomicBool>
 }
 
 impl Signals {
-    pub fn new(capacity: usize) -> Signals {
-        Signals {
-            ring_buffer: HeapRb::<Point>::new(capacity),
-        }
+    pub fn new(state: Arc<AtomicBool>) -> Signals {
+        Signals { is_working: state }
     }
 
     pub async fn generate_data(
-        mut prod: impl ringbuf::traits::Producer<Item = Point>,
+        &mut self,
+        prod: Sender<Point>,
         mut start_x: f64,
         dx: f64,
     ) {
-        loop {
 
+        while self.is_working.load(Ordering::Relaxed) {
             let start_y = start_x.sin();
-
-            let _ =prod.try_push(Point(start_y, start_x));
+            println!("signal");
+            let _ =prod.send(Point { x: start_x, y: start_y });
 
             start_x += dx;
 
