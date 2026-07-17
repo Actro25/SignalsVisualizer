@@ -1,5 +1,7 @@
 const startButton = document.getElementById("ws_start");
 const stopButton = document.getElementById("ws_stop");
+const applyButton = document.getElementById("apply");
+const inputQuantityPoints = document.getElementById("quantity-input");
 
 const showPlotDiv = document.getElementById("show");
 
@@ -84,8 +86,6 @@ startButton.addEventListener('click', function () {
 
             ringBuffer.push(signal.x, signal.y);
 
-            console.log("x: " + signal.x + " .y: " + signal.y);
-
             if (isWork) {
                 uplot.setData(ringBuffer.getLinearData());
             }
@@ -118,4 +118,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 stopButton.addEventListener('click', function () {
     isWork = false;
+})
+
+applyButton.addEventListener('click', function () {
+    let inputValue = inputQuantityPoints.value;
+
+    if (inputValue === '') {
+        alert('Please, enter correct value!');
+        return;
+    }
+
+    const numericValue = Number(inputValue);
+    if (numericValue <= 0) {
+        alert('Please, enter correct value!');
+        return;
+    }
+    ringBuffer.setCapacity(numericValue);
 })
