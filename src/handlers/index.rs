@@ -1,4 +1,5 @@
 use crate::generator::point::Point;
+use crate::generator::signaler::Signaler;
 use crate::generator::signals::Signals;
 use crate::models::templates::HomeTemplate;
 use askama::Template;
@@ -23,15 +24,19 @@ pub async fn ws_data_transfer_handler(
     let wr1 = working.clone();
     let wr2 = working.clone();
 
-    let mut signal = Signals::new(wr1);
-    tokio::spawn(async move {
-        signal.generate_data(prod, 0.0, 0.005).await;
-    });
+    let signal = Signals::new(wr1);
+    create_new_thread_with_signals(signal, prod);
 
     ws.on_upgrade(async move |socket| {
         send_data_via_ws(socket, consumer).await;
         wr2.store(false, Ordering::Relaxed);
     })
+}
+
+fn create_new_thread_with_signals(mut signal: impl Signaler + Send + 'static, prod: Sender<Point>) {
+    tokio::spawn(async move {
+        signal.generate_data(prod).await;
+    });
 }
 
 async fn send_data_via_ws(mut socket: WebSocket, mut cons: Receiver<Point>) {

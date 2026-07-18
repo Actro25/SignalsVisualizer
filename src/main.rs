@@ -17,10 +17,17 @@ async fn main() {
         .await
         .unwrap();
 
-    println!(
-        "Server is listening on {} .",
-        listener.local_addr().unwrap()
-    );
+    match listener.local_addr() {
+        Ok(addr) => println!("Listening on IP: {}, Port: {}", addr.ip(), addr.port()),
+        Err(error) => {
+            eprintln!(
+                "Failed to get local address. System error kind: {:?}",
+                error.kind()
+            );
+        }
+    }
 
+    //Here is using unwrap because Err technically unreachable.
+    //If server() has an Error he'll implicitly wrap errors and continue working.
     axum::serve(listener, app).await.unwrap();
 }
