@@ -59,7 +59,17 @@ async fn send_data_via_ws(socket: WebSocket, mut cons: Receiver<Point>, mut ampl
              message = receiver.next() => {
                 match message {
                     Some(Ok(Message::Text(msg))) => {
-                        println!("Text from Web Socket: {}", msg);
+                        if let Ok(command) = serde_json::from_str::<Command>(&msg){
+                            match command.action.as_str() {
+                                "change_amplitude" => {
+                                    amplitude.store(command.value, Ordering::Relaxed);
+                                },
+                                "change_frequency" => {
+                                    frequency.store(command.value, Ordering::Relaxed);
+                                },
+                                _ => println!("Unseen command.")
+                            }
+                        }
                     },
                     Some(Ok(Message::Close(_))) | None => {
                         println!("Client closed connection");
@@ -87,7 +97,6 @@ async fn send_data_via_ws(socket: WebSocket, mut cons: Receiver<Point>, mut ampl
                                     .await
                                     .is_err()
                                 {
-                                    println!("Stopped!!!!!!!!!!!!!!!!!!!!!!!");
                                     break;
                                 }
                             }
