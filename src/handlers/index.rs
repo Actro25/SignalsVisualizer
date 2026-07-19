@@ -1,11 +1,12 @@
+use crate::generator::generator::Generator;
 use crate::generator::point::Point;
-use crate::generator::signaler::Signaler;
 use crate::generator::signals::Signals;
 use crate::models::templates::HomeTemplate;
 use askama::Template;
 use axum::extract::State;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::response::{Html, IntoResponse, Response};
+use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::broadcast::{Receiver, Sender};
@@ -29,39 +30,64 @@ pub async fn ws_data_transfer_handler(
 
     ws.on_upgrade(async move |socket| {
         send_data_via_ws(socket, consumer).await;
+        println!("Web Socket connection was closed.");
         wr2.store(false, Ordering::Relaxed);
     })
 }
 
-fn create_new_thread_with_signals(mut signal: impl Signaler + Send + 'static, prod: Sender<Point>) {
+fn create_new_thread_with_signals(
+    mut signal: impl Generator + Send + 'static,
+    prod: Sender<Point>,
+) {
     tokio::spawn(async move {
         signal.generate_data(prod).await;
     });
 }
 
 async fn send_data_via_ws(mut socket: WebSocket, mut cons: Receiver<Point>) {
+    let (mut sender, mut receiver) = socket.split();
+
     loop {
-        match cons.recv().await {
-            Ok(point) => {
-                let transfer_value: Point = Point {
-                    x: point.x,
-                    y: point.y,
-                };
-                match serde_json::to_string(&transfer_value) {
-                    Ok(json_string) => {
-                        if socket
-                            .send(Message::Text(json_string.into()))
-                            .await
-                            .is_err()
-                        {
-                            break;
-                        }
+        tokio::select! {
+            message = receiver.next() => {
+                match message {
+                    Some(Ok(Message::Close(_))) | None => {
+                        println!("Client closed connection");
+                        break;
                     }
-                    Err(e) => eprintln!("Error JSON serializing: {}", e),
+                    Some(Err(e)) => {
+                        println!("WS read error: {e}");
+                        break;
+                    }
+                    _ => {}
                 }
             }
-            Err(e) => {
-                println!("There is exception in handler_socket: {}", e);
+
+            point = cons.recv() => {
+                match point {
+                    Ok(point) => {
+                        let transfer_value: Point = Point {
+                            x: point.x,
+                            y: point.y,
+                        };
+                        match serde_json::to_string(&transfer_value) {
+                            Ok(json_string) => {
+                                if sender
+                                    .send(Message::Text(json_string.into()))
+                                    .await
+                                    .is_err()
+                                {
+                                    println!("Stopped!!!!!!!!!!!!!!!!!!!!!!!");
+                                    break;
+                                }
+                            }
+                            Err(e) => eprintln!("Error JSON serializing: {}", e),
+                        }
+                    }
+                    Err(e) => {
+                        println!("There is error in handler_socket: {}", e);
+                    }
+                }
             }
         }
     }

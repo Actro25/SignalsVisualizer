@@ -1,9 +1,8 @@
+use crate::generator::generator::Generator;
 use crate::generator::point::Point;
-use crate::generator::signaler::Signaler;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::broadcast::Sender;
-use tokio::sync::broadcast::error::SendError;
 
 pub struct Signals {
     pub is_working: Arc<AtomicBool>,
@@ -16,7 +15,7 @@ impl Signals {
 }
 
 #[async_trait::async_trait]
-impl Signaler for Signals {
+impl Generator for Signals {
     async fn generate_data(&mut self, prod: Sender<Point>) {
         let mut start_x: f64 = 0.0;
         let dx: f64 = 0.005;

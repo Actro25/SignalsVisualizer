@@ -1,5 +1,6 @@
-const startButton = document.getElementById("ws_start");
-const stopButton = document.getElementById("ws_stop");
+const connectButton = document.getElementById("ws_connect");
+const disConnectButton = document.getElementById("ws_disconnect");
+const pauseButton = document.getElementById("plot_pause");
 const applyButton = document.getElementById("apply");
 const inputQuantityPoints = document.getElementById("quantity-input");
 
@@ -8,7 +9,8 @@ const showPlotDiv = document.getElementById("show");
 let ws = null;
 let uplot = null;
 let ringBuffer = null;
-let isWork = false;
+let isWork = true;
+let quantityOfPoints = 1000;
 
 class RingBuffer {
     constructor(capacity) {
@@ -72,8 +74,7 @@ class RingBuffer {
     }
 }
 
-startButton.addEventListener('click', function () {
-    isWork = true;
+connectButton.addEventListener('click', function () {
     if (ws) {
         console.log("Active.");
         return;
@@ -116,8 +117,15 @@ document.addEventListener("DOMContentLoaded", () => {
     uplot = new uPlot(opts, [[], []], showPlotDiv);
 });
 
-stopButton.addEventListener('click', function () {
-    isWork = false;
+pauseButton.addEventListener('click', function () {
+    isWork = !isWork;
+    if(!isWork){
+        pauseButton.textContent = "Continue";
+    }
+    else{
+        pauseButton.textContent = "Pause";
+    }
+
 })
 
 applyButton.addEventListener('click', function () {
@@ -133,5 +141,12 @@ applyButton.addEventListener('click', function () {
         alert('Please, enter correct value!');
         return;
     }
-    ringBuffer.setCapacity(numericValue);
+    quantityOfPoints = numericValue
+    ringBuffer.setCapacity(quantityOfPoints);
+})
+
+disConnectButton.addEventListener('click', function () {
+    ws.close();
+    ws = null;
+    ringBuffer = new RingBuffer(quantityOfPoints);
 })
