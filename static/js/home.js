@@ -181,6 +181,11 @@ inputFrequency.addEventListener('input', function (event) {
     spanFrequency.value = event.target.value;
 });
 
+inputFrequency.addEventListener('change', function (event) {
+    const changeEvent = new Event('change');
+    spanFrequency.dispatchEvent(changeEvent);
+});
+
 spanFrequency.addEventListener('change', function (event) {
     let val = Number(event.target.value);
     const min = Number(inputFrequency.min);
@@ -192,6 +197,13 @@ spanFrequency.addEventListener('change', function (event) {
 
         event.target.value = val;
         inputFrequency.value = val;
+
+        const command = {
+            action: "change_frequency",
+            value: val
+        }
+        ws.send(JSON.stringify(command));
+        //console.log("Frequency was send to server. Data: " + command);
     }
 });
 
@@ -199,6 +211,11 @@ spanFrequency.addEventListener('change', function (event) {
 // === Amplitude ===
 inputAmplitude.addEventListener('input', function (event) {
     spanAmplitude.value = event.target.value;
+});
+
+inputAmplitude.addEventListener('input', function (event) {
+    const changeEvent = new Event('change');
+    spanAmplitude.dispatchEvent(changeEvent);
 });
 
 spanAmplitude.addEventListener('change', function (event) {
@@ -212,6 +229,13 @@ spanAmplitude.addEventListener('change', function (event) {
 
         event.target.value = val;
         inputAmplitude.value = val;
+
+        const command = {
+            action: "change_amplitude",
+            value: val
+        }
+        ws.send(JSON.stringify(command));
+        //console.log("Amplitude was send to server. Data: " + command);
     }
 });
 

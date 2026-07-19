@@ -12,6 +12,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use atomic_float::AtomicF64;
 use tokio::sync::broadcast::{Receiver, Sender};
 
+#[derive(serde::Deserialize)]
+struct Command {
+    action: String,
+    value: f64
+}
 pub async fn home() -> Response {
     let html_string = HomeTemplate {}.render().unwrap();
     Html(html_string).into_response()
@@ -51,7 +56,7 @@ async fn send_data_via_ws(socket: WebSocket, mut cons: Receiver<Point>, mut ampl
 
     loop {
         tokio::select! {
-            message = receiver.next() => {
+             message = receiver.next() => {
                 match message {
                     Some(Ok(Message::Text(msg))) => {
                         println!("Text from Web Socket: {}", msg);
