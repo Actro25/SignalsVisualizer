@@ -1,8 +1,15 @@
 const connectButton = document.getElementById("ws_connect");
 const disConnectButton = document.getElementById("ws_disconnect");
 const pauseButton = document.getElementById("plot_pause");
-const applyButton = document.getElementById("apply");
-const inputQuantityPoints = document.getElementById("quantity-input");
+
+const inputQuantityPoints = document.getElementById("points-range");
+const spanQuantityPoints = document.getElementById("quantity-range-value");
+
+const inputAmplitude = document.getElementById("amplitude-range");
+const spanAmplitude = document.getElementById("amplitude-range-value");
+
+const inputFrequency = document.getElementById("frequency-range");
+const spanFrequency = document.getElementById("frequency-range-value");
 
 const showPlotDiv = document.getElementById("show");
 
@@ -128,7 +135,7 @@ pauseButton.addEventListener('click', function () {
 
 })
 
-applyButton.addEventListener('click', function () {
+inputQuantityPoints.addEventListener('change', function (event) {
     let inputValue = inputQuantityPoints.value;
 
     if (inputValue === '') {
@@ -143,6 +150,15 @@ applyButton.addEventListener('click', function () {
     }
     quantityOfPoints = numericValue
     ringBuffer.setCapacity(quantityOfPoints);
+    spanQuantityPoints.textContent = event.target.value;
+})
+
+inputFrequency.addEventListener('change', function (event) {
+    spanFrequency.textContent = event.target.value;
+})
+
+inputAmplitude.addEventListener('change', function (event) {
+    spanAmplitude.textContent = event.target.value;
 })
 
 disConnectButton.addEventListener('click', function () {

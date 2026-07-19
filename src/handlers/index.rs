@@ -9,6 +9,7 @@ use axum::response::{Html, IntoResponse, Response};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use atomic_float::AtomicF64;
 use tokio::sync::broadcast::{Receiver, Sender};
 
 pub async fn home() -> Response {
@@ -21,17 +22,18 @@ pub async fn ws_data_transfer_handler(
     State(prod): State<Sender<Point>>,
 ) -> impl IntoResponse {
     let consumer = prod.subscribe();
-    let working = Arc::new(AtomicBool::new(true));
-    let wr1 = working.clone();
-    let wr2 = working.clone();
 
-    let signal = Signals::new(wr1);
+    let working = Arc::new(AtomicBool::new(true));
+    let amplitude = Arc::new(AtomicF64::from(1.0));
+    let frequency = Arc::new(AtomicF64::from(0.005));
+
+    let signal = Signals::new(working.clone(), amplitude.clone(), frequency.clone());
     create_new_thread_with_signals(signal, prod);
 
     ws.on_upgrade(async move |socket| {
-        send_data_via_ws(socket, consumer).await;
+        send_data_via_ws(socket, consumer, amplitude, frequency).await;
         println!("Web Socket connection was closed.");
-        wr2.store(false, Ordering::Relaxed);
+        working.store(false, Ordering::Relaxed);
     })
 }
 
@@ -44,13 +46,16 @@ fn create_new_thread_with_signals(
     });
 }
 
-async fn send_data_via_ws(mut socket: WebSocket, mut cons: Receiver<Point>) {
+async fn send_data_via_ws(socket: WebSocket, mut cons: Receiver<Point>, mut amplitude: Arc<AtomicF64>,mut frequency: Arc<AtomicF64>) {
     let (mut sender, mut receiver) = socket.split();
 
     loop {
         tokio::select! {
             message = receiver.next() => {
                 match message {
+                    Some(Ok(Message::Text(msg))) => {
+                        println!("Text from Web Socket: {}", msg);
+                    },
                     Some(Ok(Message::Close(_))) | None => {
                         println!("Client closed connection");
                         break;

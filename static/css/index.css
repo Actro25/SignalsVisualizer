@@ -135,3 +135,77 @@ button:focus-visible {
     border-color: #3182ce;
     box-shadow: 0 0 0 4px rgba(49, 130, 206, 0.15);
 }
+
+.range-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: sans-serif;
+    width: 100%;
+}
+
+.range-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #282D30;
+    display: flex;
+    justify-content: space-between;
+}
+
+.styled-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #282D30;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.styled-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3DFF9E;
+    border: 2px solid #282D30;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.styled-range::-webkit-slider-thumb:hover {
+    background: #ffffff;
+    transform: scale(1.1);
+}
+
+.styled-range::-webkit-slider-thumb:active {
+    background: #92A1A6;
+    transform: scale(0.95);
+}
+
+.styled-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3DFF9E;
+    border: 2px solid #282D30;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.styled-range::-moz-range-thumb:hover {
+    background: #ffffff;
+    transform: scale(1.1);
+}
+
+.styled-range::-moz-range-thumb:active {
+    background: #92A1A6;
+    transform: scale(0.95);
+}
+
+.styled-range:focus-visible {
+    outline: 2px solid #282D30;
+    outline-offset: 3px;
+}
