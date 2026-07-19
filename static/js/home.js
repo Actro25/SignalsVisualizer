@@ -135,6 +135,12 @@ pauseButton.addEventListener('click', function () {
 
 })
 
+
+// === Quantity of points ===
+inputQuantityPoints.addEventListener('input', function (event) {
+    spanQuantityPoints.value = event.target.value;
+});
+
 inputQuantityPoints.addEventListener('change', function (event) {
     let inputValue = inputQuantityPoints.value;
 
@@ -148,18 +154,66 @@ inputQuantityPoints.addEventListener('change', function (event) {
         alert('Please, enter correct value!');
         return;
     }
-    quantityOfPoints = numericValue
+    quantityOfPoints = numericValue;
     ringBuffer.setCapacity(quantityOfPoints);
-    spanQuantityPoints.textContent = event.target.value;
-})
+});
 
-inputFrequency.addEventListener('change', function (event) {
-    spanFrequency.textContent = event.target.value;
-})
+spanQuantityPoints.addEventListener('change', function (event) {
+    let val = Number(event.target.value);
+    const min = Number(inputQuantityPoints.min);
+    const max = Number(inputQuantityPoints.max);
 
-inputAmplitude.addEventListener('change', function (event) {
-    spanAmplitude.textContent = event.target.value;
-})
+    if (!isNaN(val)) {
+        if (val < min) val = min;
+        if (val > max) val = max;
+
+        event.target.value = val;
+        inputQuantityPoints.value = val;
+
+        quantityOfPoints = val;
+        ringBuffer.setCapacity(quantityOfPoints);
+    }
+});
+
+
+// === Frequency ===
+inputFrequency.addEventListener('input', function (event) {
+    spanFrequency.value = event.target.value;
+});
+
+spanFrequency.addEventListener('change', function (event) {
+    let val = Number(event.target.value);
+    const min = Number(inputFrequency.min);
+    const max = Number(inputFrequency.max);
+
+    if (!isNaN(val)) {
+        if (val < min) val = min;
+        if (val > max) val = max;
+
+        event.target.value = val;
+        inputFrequency.value = val;
+    }
+});
+
+
+// === Amplitude ===
+inputAmplitude.addEventListener('input', function (event) {
+    spanAmplitude.value = event.target.value;
+});
+
+spanAmplitude.addEventListener('change', function (event) {
+    let val = Number(event.target.value);
+    const min = Number(inputAmplitude.min);
+    const max = Number(inputAmplitude.max);
+
+    if (!isNaN(val)) {
+        if (val < min) val = min;
+        if (val > max) val = max;
+
+        event.target.value = val;
+        inputAmplitude.value = val;
+    }
+});
 
 disConnectButton.addEventListener('click', function () {
     ws.close();
