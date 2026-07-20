@@ -1,3 +1,3 @@
+pub mod generator;pub mod point;
 pub mod signals;
-pub mod point;
-pub mod generator;
+

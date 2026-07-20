@@ -58,10 +58,18 @@ mod tests {
             signal.generate_data(producer).await;
         });
 
-        for _ in 0..20{
-            if let Ok(point) = consumer.recv().await{
-                assert!(point.y <= amplitude.load(Ordering::Relaxed), "There is an error, y is above {}.", amplitude.load(Ordering::Relaxed));
-                assert!(point.y >= -amplitude.load(Ordering::Relaxed), "There is an error, y is below {}.", amplitude.load(Ordering::Relaxed));
+        for _ in 0..20 {
+            if let Ok(point) = consumer.recv().await {
+                assert!(
+                    point.y <= amplitude.load(Ordering::Relaxed),
+                    "There is an error, y is above {}.",
+                    amplitude.load(Ordering::Relaxed)
+                );
+                assert!(
+                    point.y >= -amplitude.load(Ordering::Relaxed),
+                    "There is an error, y is below {}.",
+                    amplitude.load(Ordering::Relaxed)
+                );
             }
         }
 
@@ -82,12 +90,20 @@ mod tests {
             signal.generate_data(producer).await;
         });
 
-        amplitude.store(10.0,Ordering::Relaxed);
+        amplitude.store(10.0, Ordering::Relaxed);
 
-        for _ in 0..20{
-            if let Ok(point) = consumer.recv().await{
-                assert!(point.y <= amplitude.load(Ordering::Relaxed), "There is an error, y is above {}.", amplitude.load(Ordering::Relaxed));
-                assert!(point.y >= -amplitude.load(Ordering::Relaxed), "There is an error, y is below {}.", amplitude.load(Ordering::Relaxed));
+        for _ in 0..20 {
+            if let Ok(point) = consumer.recv().await {
+                assert!(
+                    point.y <= amplitude.load(Ordering::Relaxed),
+                    "There is an error, y is above {}.",
+                    amplitude.load(Ordering::Relaxed)
+                );
+                assert!(
+                    point.y >= -amplitude.load(Ordering::Relaxed),
+                    "There is an error, y is below {}.",
+                    amplitude.load(Ordering::Relaxed)
+                );
             }
         }
 
@@ -113,7 +129,12 @@ mod tests {
 
         let dx = (point1.x - point2.x).abs();
 
-        assert!(dx - frequency.load(Ordering::Relaxed) <= 0.0001, "Here is an error, x: {} - freq: {} not <= 0.0001", dx, frequency.load(Ordering::Relaxed));
+        assert!(
+            dx - frequency.load(Ordering::Relaxed) <= 0.0001,
+            "Here is an error, x: {} - freq: {} not <= 0.0001",
+            dx,
+            frequency.load(Ordering::Relaxed)
+        );
 
         working.store(false, Ordering::Relaxed);
     }
@@ -132,14 +153,19 @@ mod tests {
             signal.generate_data(producer).await;
         });
 
-        frequency.store(0.5,Ordering::Relaxed);
+        frequency.store(0.5, Ordering::Relaxed);
 
         let mut new_freq = consumer.recv().await.unwrap();
 
-        for _ in 0..20{
-            if let Ok(point) = consumer.recv().await{
+        for _ in 0..20 {
+            if let Ok(point) = consumer.recv().await {
                 let dx = (new_freq.x - point.x).abs();
-                assert!(dx - frequency.load(Ordering::Relaxed) <= 0.0001, "Here is an error, x: {} - freq: {} not <= 0.0001", dx, frequency.load(Ordering::Relaxed));
+                assert!(
+                    dx - frequency.load(Ordering::Relaxed) <= 0.0001,
+                    "Here is an error, x: {} - freq: {} not <= 0.0001",
+                    dx,
+                    frequency.load(Ordering::Relaxed)
+                );
                 new_freq = consumer.recv().await.unwrap();
             }
         }
@@ -164,12 +190,15 @@ mod tests {
         working.store(false, Ordering::Relaxed);
 
         let _ = consumer.recv().await;
-        
+
         if let Err(tokio::sync::broadcast::error::RecvError::Closed) = consumer.recv().await {
             assert!(true);
-        }
-        else {
-            assert!(false, "Here is an error, generator aren't closed but he should. Working state: {}", working.load(Ordering::Relaxed));
+        } else {
+            assert!(
+                false,
+                "Here is an error, generator aren't closed but he should. Working state: {}",
+                working.load(Ordering::Relaxed)
+            );
         }
     }
 }

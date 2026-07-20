@@ -84,7 +84,7 @@ pub fn create_new_thread_with_ws_receiver(
     })
 }
 
-fn parse_action(msg: &str, amplitude: &Arc<AtomicF64>, frequency: &Arc<AtomicF64>,){
+fn parse_action(msg: &str, amplitude: &Arc<AtomicF64>, frequency: &Arc<AtomicF64>) {
     if let Ok(command) = serde_json::from_str::<Command>(&msg) {
         match command.action.as_str() {
             "change_amplitude" => {
@@ -131,39 +131,44 @@ pub fn create_new_thread_with_ws_sender(
     })
 }
 
-mod test{
-    use std::sync::Arc;
-    use axum::extract::ws::Message;
-    use futures_util::stream;
-    use std::sync::atomic::Ordering;
-    use std::time::Duration;
-    use atomic_float::AtomicF64;
+mod test {
     use crate::handlers::index::parse_action;
+    use atomic_float::AtomicF64;
+    use std::sync::Arc;
+    use std::sync::atomic::Ordering;
 
     #[test]
-    fn test_valid_change_amplitude(){
+    fn test_valid_change_amplitude() {
         let amplitude = Arc::new(AtomicF64::from(1.0));
         let frequency = Arc::new(AtomicF64::from(0.005));
 
-        parse_action(r#"{"action": "change_amplitude", "value": 7.5}"#, &amplitude, &frequency);
+        parse_action(
+            r#"{"action": "change_amplitude", "value": 7.5}"#,
+            &amplitude,
+            &frequency,
+        );
 
         assert_eq!(amplitude.load(Ordering::Relaxed), 7.5);
         assert_eq!(frequency.load(Ordering::Relaxed), 0.005);
     }
 
     #[test]
-    fn test_valid_change_frequency(){
+    fn test_valid_change_frequency() {
         let amplitude = Arc::new(AtomicF64::from(1.0));
         let frequency = Arc::new(AtomicF64::from(0.005));
 
-        parse_action(r#"{"action": "change_frequency", "value": 0.02}"#, &amplitude, &frequency);
+        parse_action(
+            r#"{"action": "change_frequency", "value": 0.02}"#,
+            &amplitude,
+            &frequency,
+        );
 
         assert_eq!(amplitude.load(Ordering::Relaxed), 1.0);
         assert_eq!(frequency.load(Ordering::Relaxed), 0.02);
     }
 
     #[test]
-    fn test_broken_json_does_not_panic(){
+    fn test_broken_json_does_not_panic() {
         let amplitude = Arc::new(AtomicF64::from(1.0));
         let frequency = Arc::new(AtomicF64::from(0.005));
 
@@ -174,11 +179,15 @@ mod test{
     }
 
     #[test]
-    fn test_unknown_action_does_nothing(){
+    fn test_unknown_action_does_nothing() {
         let amplitude = Arc::new(AtomicF64::from(1.0));
         let frequency = Arc::new(AtomicF64::from(0.005));
 
-        parse_action(r#"{"action": "unknown_action", "value": 1.0}"#, &amplitude, &frequency);
+        parse_action(
+            r#"{"action": "unknown_action", "value": 1.0}"#,
+            &amplitude,
+            &frequency,
+        );
 
         assert_eq!(amplitude.load(Ordering::Relaxed), 1.0);
         assert_eq!(frequency.load(Ordering::Relaxed), 0.005);
