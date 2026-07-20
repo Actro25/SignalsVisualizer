@@ -24,9 +24,9 @@ main {
 .left-div {
     height: 100%;
     width: 75%;
-    padding: 10px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .right-div {
@@ -41,8 +41,12 @@ main {
 }
 
 .graphik-div{
+    width: 100%;
+    height: 100%;
     background: whitesmoke;
     border-radius: 20px;
+    overflow: hidden;
+    position: relative;
 }
 
 .right-upper-bar{
@@ -68,6 +72,7 @@ main {
 }
 
 button {
+    width: 100%;
     background-color: #282D30;
     color: #92A1A6;
     font-size: 16px;

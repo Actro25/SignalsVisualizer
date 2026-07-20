@@ -109,19 +109,38 @@ connectButton.addEventListener('click', function () {
 
 document.addEventListener("DOMContentLoaded", () => {
     ringBuffer = new RingBuffer(1000);
+
+    function getPlotSize() {
+        return {
+            width: showPlotDiv.clientWidth,
+            height: showPlotDiv.clientHeight
+        };
+    }
+
     const opts = {
-        width: 800,
-        height: 400,
+        ...getPlotSize(),
         series: [
             {},
             {
-                label: "Значення",
+                label: "Value",
                 stroke: "blue",
                 width: 2,
             },
         ],
     };
+
     uplot = new uPlot(opts, [[], []], showPlotDiv);
+
+    let resizeTimeout;
+    window.addEventListener("resize", () => {
+        cancelAnimationFrame(resizeTimeout);
+        resizeTimeout = requestAnimationFrame(() => {
+            if (uplot) {
+                const size = getPlotSize();
+                uplot.setSize(size);
+            }
+        });
+    });
 });
 
 pauseButton.addEventListener('click', function () {
@@ -203,7 +222,6 @@ spanFrequency.addEventListener('change', function (event) {
             value: val
         }
         ws.send(JSON.stringify(command));
-        //console.log("Frequency was send to server. Data: " + command);
     }
 });
 
@@ -235,7 +253,6 @@ spanAmplitude.addEventListener('change', function (event) {
             value: val
         }
         ws.send(JSON.stringify(command));
-        //console.log("Amplitude was send to server. Data: " + command);
     }
 });
 
