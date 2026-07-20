@@ -34,6 +34,7 @@ pub async fn ws_data_transfer_handler(
     let frequency = Arc::new(AtomicF64::from(0.005));
 
     let signal = Signals::new(working.clone(), amplitude.clone(), frequency.clone());
+    
     create_new_thread_with_signals(signal, prod);
 
     ws.on_upgrade(async move |socket| {

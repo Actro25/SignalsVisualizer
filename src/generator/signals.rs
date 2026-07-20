@@ -11,16 +11,6 @@ pub struct Signals {
     pub frequency: Arc<AtomicF64>,
 }
 
-impl Signals {
-    pub fn new(state: Arc<AtomicBool>, ampl: Arc<AtomicF64>, freq: Arc<AtomicF64>) -> Signals {
-        Signals {
-            is_working: state,
-            amplitude: ampl,
-            frequency: freq,
-        }
-    }
-}
-
 #[async_trait::async_trait]
 impl Generator for Signals {
     async fn generate_data(&mut self, prod: Sender<Point>) {
@@ -36,6 +26,13 @@ impl Generator for Signals {
             }
             start_x += self.frequency.load(Ordering::Relaxed);
             tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    }
+    fn new(state: Arc<AtomicBool>, ampl: Arc<AtomicF64>, freq: Arc<AtomicF64>) -> Signals {
+        Signals {
+            is_working: state,
+            amplitude: ampl,
+            frequency: freq,
         }
     }
 }
