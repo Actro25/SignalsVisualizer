@@ -25,9 +25,9 @@ implements **generator** trait. Also make sure to add this Atomic fields: [ is_w
 Now you need to add your own structure into code. In file **index.rs** at **37** 
 line you just need to change the following line:
 ```rust
-let mut signal = Signals::new(working.clone(), amplitude.clone(), frequency);
+let signal = Signals::new(working.clone(), amplitude.clone(), frequency.clone());
 ```
 into this:
 ```rust
-let mut signal = "Here is you structure name"::new(working.clone(), amplitude.clone(), frequency);
+let signal = "Here is you structure name"::new(working.clone(), amplitude.clone(), frequency.clone());
 ```
