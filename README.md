@@ -13,10 +13,11 @@ Next, go to the “SignalsVisualizer” folder.
 cd SignalsVisualizer
 ```
 
-Now you can simply run the application using the following command:
+Next you must run the application using the following command:
 ```shell
 cargo run
 ```
+Now to see chart you need to open the page at this address *http://localhost:3000*
 
 # How to add you own signals?
 It's simple. First of all you need to create you own structure that 
